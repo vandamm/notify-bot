@@ -8,4 +8,6 @@ export interface BotConfig {
   configurationMessage?: string;
   createdAt: string;
   updatedAt: string;
-} 
+}
+
+export type CFArgs = [Env, ExecutionContext]; 

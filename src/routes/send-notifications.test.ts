@@ -43,7 +43,7 @@ describe('handleSendNotifications', () => {
 
       mockGetBotInstanceById.mockResolvedValue(mockBot);
 
-      const response = await handleSendNotifications(mockRequest, mockEnv, '18xx.games', 123456789);
+      const response = await handleSendNotifications(mockRequest, mockEnv, '18xx.games', '123456789');
 
       expect(response.status).toBe(200);
       expect(await response.text()).toBe('OK');
@@ -69,7 +69,7 @@ describe('handleSendNotifications', () => {
 
       mockGetBotInstanceById.mockResolvedValue(mockBot);
 
-      const response = await handleSendNotifications(mockRequest, mockEnv, '18xx.games', NaN);
+      const response = await handleSendNotifications(mockRequest, mockEnv, '18xx.games', 'NaN');
 
       expect(response.status).toBe(400);
       expect(await response.text()).toBe('Invalid chat ID');
@@ -132,7 +132,7 @@ describe('handleSendNotifications', () => {
 
       mockGetBotInstanceById.mockResolvedValue(mockBot);
 
-      const response = await handleSendNotifications(mockRequest, mockEnv, '18xx.games', NaN);
+      const response = await handleSendNotifications(mockRequest, mockEnv, '18xx.games', 'NaN');
 
       expect(response.status).toBe(200);
       expect(await response.text()).toBe('OK');
@@ -163,7 +163,7 @@ describe('handleSendNotifications', () => {
 
       mockGetBotInstanceById.mockResolvedValue(mockBot);
 
-      const response = await handleSendNotifications(mockRequest, mockEnv, '18xx.games', 555666777);
+      const response = await handleSendNotifications(mockRequest, mockEnv, '18xx.games', '555666777');
 
       expect(response.status).toBe(200);
       expect(await response.text()).toBe('OK');
@@ -188,7 +188,7 @@ describe('handleSendNotifications', () => {
 
       mockGetBotInstanceById.mockResolvedValue(mockBot);
 
-      const response = await handleSendNotifications(mockRequest, mockEnv, '18xx.games', 123456789);
+      const response = await handleSendNotifications(mockRequest, mockEnv, '18xx.games', '123456789');
 
       expect(response.status).toBe(200);
       expect(await response.text()).toBe('OK');
@@ -215,7 +215,7 @@ describe('handleSendNotifications', () => {
 
       mockGetBotInstanceById.mockResolvedValue(mockBot);
 
-      const response = await handleSendNotifications(mockRequest, mockEnv, '18xx.games', 123456789);
+      const response = await handleSendNotifications(mockRequest, mockEnv, '18xx.games', '123456789');
 
       expect(response.status).toBe(422);
       expect(await response.text()).toBe('Message has invalid format');
@@ -273,7 +273,7 @@ describe('handleSendNotifications', () => {
         text: jest.fn().mockRejectedValue(new Error('Test error')),
       } as any;
 
-      const response = await handleSendNotifications(mockRequest, mockEnv, '18xx.games', 123456789);
+      const response = await handleSendNotifications(mockRequest, mockEnv, '18xx.games', '123456789');
 
       expect(response.status).toBe(500);
       expect(await response.text()).toBe('Internal server error');

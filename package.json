@@ -35,5 +35,8 @@
     "typegram": "^5.2.0",
     "typescript": "^4.4.3",
     "wrangler": "^4"
+  },
+  "dependencies": {
+    "itty-router": "^5.0.18"
   }
 }
