@@ -1,41 +1,23 @@
+import { AutoRouter, IRequest } from 'itty-router';
 import { handleProcessUpdates } from './routes/process-updates';
 import { handleSendNotifications } from './routes/send-notifications';
-import { Env } from './types';
+import { Env, CFArgs } from './types';
 
-const LEGACY_BOT_ID = '18xx.games';
+const router = AutoRouter<IRequest, CFArgs>();
 
-export default {
-  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
-    const url = new URL(request.url);
+router.post('/send-notifications/:chatId', (request: IRequest, env: Env, ctx: ExecutionContext) => 
+  handleSendNotifications(request, env, '18xx.games', request.params.chatId)
+);
 
-    console.log({
-      message: 'Incoming request',
-      request,
-    })
-    
-    if (request.method === 'POST') {
-      const legacySendNotificationsMatch = url.pathname.match(/^\/send-notifications\/(.+)$/);
-      if (legacySendNotificationsMatch) {
-        const chatId = parseInt(legacySendNotificationsMatch[1]);
-        return handleSendNotifications(request, env, LEGACY_BOT_ID, chatId);
-      }
-      
-      const newBotProcessUpdatesMatch = url.pathname.match(/^\/([^\/]+)\/process-updates$/);
-      if (newBotProcessUpdatesMatch) {
-        const botId = newBotProcessUpdatesMatch[1];
-        return handleProcessUpdates(request, env, botId);
-      }
-      
-      const newBotNotificationsMatch = url.pathname.match(/^\/([^\/]+)\/?(.*)$/);
-      if (newBotNotificationsMatch) {
-        const botId = newBotNotificationsMatch[1];
-        const chatId = newBotNotificationsMatch[2] ? parseInt(newBotNotificationsMatch[2]) : undefined;
-        return handleSendNotifications(request, env, botId, chatId);
-      }
-    }
-    
-    return new Response('Not Found', { status: 404 });
-  },
-};
+router.post('/:botId/process-updates', (request: IRequest, env: Env, ctx: ExecutionContext) => 
+  handleProcessUpdates(request, env, request.params.botId)
+);
 
+router.post('/:botId/:chatId?', (request: IRequest, env: Env, ctx: ExecutionContext) => 
+  handleSendNotifications(request, env, request.params.botId, request.params.chatId)
+);
+
+router.all('*', () => new Response('Not Found', { status: 404 }));
+
+export default router;
  

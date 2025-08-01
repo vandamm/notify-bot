@@ -27,17 +27,17 @@ async function parseRequestBody(request: Request): Promise<object> {
     try {
       return JSON.parse(text);
     } catch (error) {
-      // If JSON parsing fails, treat the entire body as plain text
       return { text };
     }
   } catch (error) {
-    // If we can't read the body at all, return empty object
     return {};
   }
 }
 
-export async function handleSendNotifications(request: Request, env: Env, botId: string, chatId?: number): Promise<Response> {
+export async function handleSendNotifications(request: Request, env: Env, botId: string, chatId?: string): Promise<Response> {
   try {
+    const parsedChatId = chatId ? parseInt(chatId) : undefined;
+    
     const bot = await getBotInstanceById(botId, env);
     if (!bot) {
       return new Response('Not found', { status: 404 });
@@ -49,7 +49,7 @@ export async function handleSendNotifications(request: Request, env: Env, botId:
     console.log({
       message: 'Notification',
       botId,
-      chatId,
+      chatId: parsedChatId,
       body,
       parsedMessage,
     })
@@ -58,7 +58,7 @@ export async function handleSendNotifications(request: Request, env: Env, botId:
       return new Response('Message has invalid format', { status: 422 });
     }
 
-    const targetChatId = resolveChatId(chatId, parsedMessage);
+    const targetChatId = resolveChatId(parsedChatId, parsedMessage);
     if (!targetChatId) {
       return new Response('Invalid chat ID', { status: 400 });
     }
