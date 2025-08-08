@@ -24,7 +24,6 @@ export function processConfigurationMessage(template: string, chatId: number, ba
 }
 
 export function notificationMessage(text: string, link: string): string {
-  // Simple Markdown formatting - no escaping needed
-  return `${text}
-[${link}](${link})`;
+  // No link formatting to avoid Telegram popups
+  return `${text}\n${link}`;
 }

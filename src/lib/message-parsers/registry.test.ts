@@ -11,6 +11,11 @@ describe('ParserRegistry', () => {
     expect(parser.name).toBe('18xx');
   });
 
+  it('should have choochoo parser', () => {
+    const parser = parserRegistry.get('choochoo');
+    expect(parser.name).toBe('choochoo');
+  });
+
   it('should return default parser for unknown parser', () => {
     const parser = parserRegistry.get('unknown-parser');
     expect(parser.name).toBe('default');
@@ -20,6 +25,7 @@ describe('ParserRegistry', () => {
     const parsers = parserRegistry.list();
     expect(parsers).toContain('default');
     expect(parsers).toContain('18xx');
-    expect(parsers.length).toBeGreaterThanOrEqual(2);
+    expect(parsers).toContain('choochoo');
+    expect(parsers.length).toBeGreaterThanOrEqual(3);
   });
 }); 
