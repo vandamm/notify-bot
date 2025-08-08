@@ -1,6 +1,7 @@
 import { MessageParser } from './types';
 import { DefaultParser } from './default-parser';
 import { EighteenxxParser } from './18xx-parser';
+import { ChoochooParser } from './choochoo-parser';
 
 class ParserRegistry {
   private parsers = new Map<string, MessageParser>();
@@ -8,6 +9,7 @@ class ParserRegistry {
   constructor() {
     this.register(new DefaultParser());
     this.register(new EighteenxxParser());
+    this.register(new ChoochooParser());
   }
 
   register(parser: MessageParser): void {

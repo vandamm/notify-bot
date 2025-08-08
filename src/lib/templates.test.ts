@@ -16,11 +16,11 @@ describe("DEFAULT_CONFIGURATION_MESSAGE", () => {
 });
 
 describe("notificationMessage", () => {
-  test("combines text and link with Markdown formatting", () => {
+  test("combines text and link without Markdown formatting", () => {
     const result = notificationMessage("Hello world", "https://example.com");
     expect(result).toBe(
       `Hello world
-[https://example.com](https://example.com)`
+https://example.com`
     );
   });
 
@@ -31,7 +31,7 @@ describe("notificationMessage", () => {
     );
     expect(result).toBe(
       `Test with special chars: ()[]{}!
-[https://example.com/path?param=value](https://example.com/path?param=value)`
+https://example.com/path?param=value`
     );
   });
 });
