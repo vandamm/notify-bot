@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { Bot } from './bot';
 import { MessageParser } from './message-parsers/types';
 import { Update } from './telegram/types';
@@ -8,7 +9,7 @@ describe('Bot', () => {
   beforeEach(() => {
     parser = {
       name: 'test',
-      parse: jest.fn().mockReturnValue({ content: 'test', valid: true })
+      parse: vi.fn().mockReturnValue({ content: 'test', valid: true })
     };
   });
 
@@ -30,10 +31,10 @@ describe('Bot', () => {
   });
 
   describe('processUpdate with configuration messages', () => {
-    const mockSendMessage = jest.fn();
+    const mockSendMessage = vi.fn();
     
     beforeEach(() => {
-      jest.clearAllMocks();
+      vi.clearAllMocks();
     });
 
     it('should use default configuration message when none provided', async () => {

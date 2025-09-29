@@ -1,20 +1,21 @@
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { handleSendNotifications } from './send-notifications';
 
-jest.mock('../lib/bot_repository');
+vi.mock('../lib/bot_repository');
 
 import { getBotInstanceById } from '../lib/bot_repository';
 
 describe('handleSendNotifications', () => {
-  const mockGetBotInstanceById = getBotInstanceById as jest.MockedFunction<typeof getBotInstanceById>;
+  const mockGetBotInstanceById = getBotInstanceById as any;
   
   const mockEnv = {
     BOT_CONFIG: {
-      get: jest.fn(),
+      get: vi.fn(),
     } as any,
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('With chat ID from route', () => {
@@ -26,15 +27,18 @@ describe('handleSendNotifications', () => {
         link: 'https://example.com/game/123',
       };
 
-      const mockRequest = {
-        json: jest.fn().mockResolvedValue(mockMessageBody),
-        text: jest.fn().mockResolvedValue(JSON.stringify(mockMessageBody)),
-      } as any;
+      const mockRequest = new Request('https://example.com/test', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json'
+        },
+        body: JSON.stringify(mockMessageBody)
+      });
 
       const mockBot = {
-        sendMessage: jest.fn(),
-        processUpdate: jest.fn(),
-        parseMessage: jest.fn().mockReturnValue({
+        sendMessage: vi.fn(),
+        processUpdate: vi.fn(),
+        parseMessage: vi.fn().mockReturnValue({
           content: '1830 turn completed by John',
           link: 'https://example.com/game/123',
           valid: true
@@ -55,13 +59,16 @@ describe('handleSendNotifications', () => {
     });
 
     it('should handle invalid chat ID from route', async () => {
-      const mockRequest = {
-        json: jest.fn().mockResolvedValue({}),
-        text: jest.fn().mockResolvedValue('{}'),
-      } as any;
+      const mockRequest = new Request('https://example.com/test', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json'
+        },
+        body: '{}'
+      });
 
       const mockBot = {
-        parseMessage: jest.fn().mockReturnValue({
+        parseMessage: vi.fn().mockReturnValue({
           content: 'test',
           valid: true
         })
@@ -82,14 +89,17 @@ describe('handleSendNotifications', () => {
         text: '<@139429205> This is a test notification from 18xx.games.'
       };
 
-      const mockRequest = {
-        json: jest.fn().mockResolvedValue(mockMessageBody),
-        text: jest.fn().mockResolvedValue(JSON.stringify(mockMessageBody)),
-      } as any;
+      const mockRequest = new Request('https://example.com/test', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json'
+        },
+        body: JSON.stringify(mockMessageBody)
+      });
 
       const mockBot = {
-        sendMessage: jest.fn(),
-        parseMessage: jest.fn().mockReturnValue({
+        sendMessage: vi.fn(),
+        parseMessage: vi.fn().mockReturnValue({
           content: 'This is a test notification from 18xx.games.',
           valid: true,
           metadata: {
@@ -113,14 +123,17 @@ describe('handleSendNotifications', () => {
         text: '<@987654321> Another notification from 18xx.games.'
       };
 
-      const mockRequest = {
-        json: jest.fn().mockResolvedValue(mockMessageBody),
-        text: jest.fn().mockResolvedValue(JSON.stringify(mockMessageBody)),
-      } as any;
+      const mockRequest = new Request('https://example.com/test', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json'
+        },
+        body: JSON.stringify(mockMessageBody)
+      });
 
       const mockBot = {
-        sendMessage: jest.fn(),
-        parseMessage: jest.fn().mockReturnValue({
+        sendMessage: vi.fn(),
+        parseMessage: vi.fn().mockReturnValue({
           content: 'Another notification from 18xx.games.',
           valid: true,
           metadata: {
@@ -144,14 +157,17 @@ describe('handleSendNotifications', () => {
         text: '<@139429205> This is a test notification from 18xx.games.'
       };
 
-      const mockRequest = {
-        json: jest.fn().mockResolvedValue(mockMessageBody),
-        text: jest.fn().mockResolvedValue(JSON.stringify(mockMessageBody)),
-      } as any;
+      const mockRequest = new Request('https://example.com/test', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json'
+        },
+        body: JSON.stringify(mockMessageBody)
+      });
 
       const mockBot = {
-        sendMessage: jest.fn(),
-        parseMessage: jest.fn().mockReturnValue({
+        sendMessage: vi.fn(),
+        parseMessage: vi.fn().mockReturnValue({
           content: 'This is a test notification from 18xx.games.',
           valid: true,
           metadata: {
@@ -173,14 +189,14 @@ describe('handleSendNotifications', () => {
 
   describe('Plain text input handling', () => {
     it('should handle plain text input when JSON parsing fails', async () => {
-      const mockRequest = {
-        json: jest.fn().mockRejectedValue(new Error('Unexpected token')),
-        text: jest.fn().mockResolvedValue('Test message!')
-      } as any;
+      const mockRequest = new Request('https://example.com/test', {
+        method: 'POST',
+        body: 'Test message!'
+      });
 
       const mockBot = {
-        sendMessage: jest.fn(),
-        parseMessage: jest.fn().mockReturnValue({
+        sendMessage: vi.fn(),
+        parseMessage: vi.fn().mockReturnValue({
           content: 'Test message!',
           valid: true
         })
@@ -199,15 +215,18 @@ describe('handleSendNotifications', () => {
 
   describe('Error handling', () => {
     it('should handle invalid message format', async () => {
-      const mockRequest = {
-        json: jest.fn().mockResolvedValue({}),
-        text: jest.fn().mockResolvedValue('{}'),
-      } as any;
+      const mockRequest = new Request('https://example.com/test', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json'
+        },
+        body: '{}'
+      });
 
       const mockBot = {
-        sendMessage: jest.fn(),
-        processUpdate: jest.fn(),
-        parseMessage: jest.fn().mockReturnValue({
+        sendMessage: vi.fn(),
+        processUpdate: vi.fn(),
+        parseMessage: vi.fn().mockReturnValue({
           content: 'Invalid format',
           valid: false
         })
@@ -222,13 +241,16 @@ describe('handleSendNotifications', () => {
     });
 
     it('should handle missing chat ID when no metadata available', async () => {
-      const mockRequest = {
-        json: jest.fn().mockResolvedValue({}),
-        text: jest.fn().mockResolvedValue('{}'),
-      } as any;
+      const mockRequest = new Request('https://example.com/test', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json'
+        },
+        body: '{}'
+      });
 
       const mockBot = {
-        parseMessage: jest.fn().mockReturnValue({
+        parseMessage: vi.fn().mockReturnValue({
           content: 'test message',
           valid: true,
           metadata: {}
@@ -244,13 +266,16 @@ describe('handleSendNotifications', () => {
     });
 
     it('should handle invalid user ID from message metadata', async () => {
-      const mockRequest = {
-        json: jest.fn().mockResolvedValue({}),
-        text: jest.fn().mockResolvedValue('{}'),
-      } as any;
+      const mockRequest = new Request('https://example.com/test', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json'
+        },
+        body: '{}'
+      });
 
       const mockBot = {
-        parseMessage: jest.fn().mockReturnValue({
+        parseMessage: vi.fn().mockReturnValue({
           content: 'test message',
           valid: true,
           metadata: {
@@ -268,10 +293,10 @@ describe('handleSendNotifications', () => {
     });
 
     it('should handle errors', async () => {
-      const mockRequest = {
-        json: jest.fn().mockRejectedValue(new Error('Test error')),
-        text: jest.fn().mockRejectedValue(new Error('Test error')),
-      } as any;
+      const mockRequest = new Request('https://example.com/test', {
+        method: 'POST',
+        body: 'invalid body that will cause parsing to fail'
+      });
 
       const response = await handleSendNotifications(mockRequest, mockEnv, '18xx.games', '123456789');
 

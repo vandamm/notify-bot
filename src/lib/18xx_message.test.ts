@@ -1,3 +1,4 @@
+import { describe, it, expect } from 'vitest';
 import { Parsed18xxMessage } from "./18xx_message";
 
 const event =

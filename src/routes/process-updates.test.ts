@@ -1,21 +1,22 @@
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { handleProcessUpdates } from './process-updates';
 
-jest.mock('../lib/bot_repository');
+vi.mock('../lib/bot_repository');
 
 import { getBotInstanceById } from '../lib/bot_repository';
 
 describe('handleProcessUpdates', () => {
-  const mockGetBotInstanceById = getBotInstanceById as jest.MockedFunction<typeof getBotInstanceById>;
+  const mockGetBotInstanceById = getBotInstanceById as any;
   
   const mockEnv = {
     TELEGRAM_BOT_18XX: 'test-token',
     BOT_CONFIG: {
-      get: jest.fn(),
+      get: vi.fn(),
     } as any,
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('should process update successfully', async () => {
@@ -31,11 +32,11 @@ describe('handleProcessUpdates', () => {
 
     const mockRequest = {
       url: 'https://test.example.com/18xx.games/process-updates',
-      json: jest.fn().mockResolvedValue(mockUpdate),
+      json: vi.fn().mockResolvedValue(mockUpdate),
     } as any;
 
     const mockBot = {
-      processUpdate: jest.fn(),
+      processUpdate: vi.fn(),
     };
 
     mockGetBotInstanceById.mockResolvedValue(mockBot as any);
@@ -49,7 +50,7 @@ describe('handleProcessUpdates', () => {
   it('should handle errors', async () => {
     const mockRequest = {
       url: 'https://test.example.com/18xx.games/process-updates',
-      json: jest.fn().mockRejectedValue(new Error('Test error')),
+      json: vi.fn().mockRejectedValue(new Error('Test error')),
     } as any;
 
     const response = await handleProcessUpdates(mockRequest, mockEnv, '18xx.games');
@@ -61,7 +62,7 @@ describe('handleProcessUpdates', () => {
   it('should handle bot not found', async () => {
     const mockRequest = {
       url: 'https://test.example.com/nonexistent/process-updates',
-      json: jest.fn().mockResolvedValue({}),
+      json: vi.fn().mockResolvedValue({}),
     } as any;
 
     mockGetBotInstanceById.mockRejectedValue(new Error('Bot configuration not found for ID: nonexistent'));
@@ -75,7 +76,7 @@ describe('handleProcessUpdates', () => {
   it('should handle invalid bot configuration', async () => {
     const mockRequest = {
       url: 'https://test.example.com/invalid/process-updates',
-      json: jest.fn().mockResolvedValue({}),
+      json: vi.fn().mockResolvedValue({}),
     } as any;
 
     mockGetBotInstanceById.mockRejectedValue(new Error('Bot token not found for ID: invalid'));
@@ -99,11 +100,11 @@ describe('handleProcessUpdates', () => {
 
     const mockRequest = {
       url: 'https://ping.vansach.me/18xx.games/process-updates',
-      json: jest.fn().mockResolvedValue(mockUpdate),
+      json: vi.fn().mockResolvedValue(mockUpdate),
     } as any;
 
     const mockBot = {
-      processUpdate: jest.fn(),
+      processUpdate: vi.fn(),
     };
 
     mockGetBotInstanceById.mockResolvedValue(mockBot as any);

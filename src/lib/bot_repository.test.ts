@@ -1,14 +1,15 @@
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { getBotInstanceById } from './bot_repository';
 
 describe('Bot Repository', () => {
   const mockEnv = {
     BOT_CONFIG: {
-      get: jest.fn(),
+      get: vi.fn(),
     } as any,
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('getBotInstanceById', () => {

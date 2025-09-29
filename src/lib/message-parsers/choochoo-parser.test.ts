@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach } from 'vitest';
 import { ChoochooParser } from './choochoo-parser';
 
 describe('ChoochooParser', () => {
