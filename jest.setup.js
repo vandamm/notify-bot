@@ -10,6 +10,16 @@ global.Request = class MockRequest {
   async json() {
     return JSON.parse(this.body || '{}');
   }
+
+  async text() {
+    if (typeof this.body === 'string') {
+      return this.body;
+    }
+    if (this.body == null) {
+      return '';
+    }
+    return String(this.body);
+  }
 };
 
 global.URL = class MockURL {
