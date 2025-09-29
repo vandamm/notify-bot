@@ -1,11 +1,12 @@
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { TelegramClient } from './client';
 
 // Mock fetch globally
-global.fetch = jest.fn();
+global.fetch = vi.fn();
 
 describe('TelegramClient', () => {
   let client: TelegramClient;
-  const mockFetch = fetch as jest.MockedFunction<typeof fetch>;
+  const mockFetch = fetch as any;
 
   beforeEach(() => {
     client = new TelegramClient('test-token');

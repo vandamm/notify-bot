@@ -1,3 +1,4 @@
+import { describe, it, expect } from 'vitest';
 import {
   processConfigurationMessage,
   notificationMessage,
@@ -5,18 +6,18 @@ import {
 } from "./templates";
 
 describe("DEFAULT_CONFIGURATION_MESSAGE", () => {
-  test("contains required placeholder", () => {
+  it("contains required placeholder", () => {
     expect(DEFAULT_CONFIGURATION_MESSAGE).toContain("{{WEBHOOK_URL}}");
   });
 
-  test("uses Markdown formatting", () => {
+  it("uses Markdown formatting", () => {
     expect(DEFAULT_CONFIGURATION_MESSAGE).toContain("**");
     expect(DEFAULT_CONFIGURATION_MESSAGE).toContain("`");
   });
 });
 
 describe("notificationMessage", () => {
-  test("combines text and link without Markdown formatting", () => {
+  it("combines text and link without Markdown formatting", () => {
     const result = notificationMessage("Hello world", "https://example.com");
     expect(result).toBe(
       `Hello world
@@ -24,7 +25,7 @@ https://example.com`
     );
   });
 
-  test("handles special characters without escaping", () => {
+  it("handles special characters without escaping", () => {
     const result = notificationMessage(
       "Test with special chars: ()[]{}!",
       "https://example.com/path?param=value"
@@ -37,19 +38,19 @@ https://example.com/path?param=value`
 });
 
 describe("processConfigurationMessage", () => {
-  test("requires base URL", () => {
+  it("requires base URL", () => {
     expect(() => processConfigurationMessage("template", 1, "")).toThrow(
       "Base URL is undefined"
     );
   });
 
-  test("requires template", () => {
+  it("requires template", () => {
     expect(() =>
-      processConfigurationMessage("", 1, "https://test.com")
+      processConfigurationMessage("", 1, "https://it.com")
     ).toThrow("Configuration message template is undefined");
   });
 
-  test("replaces single placeholder", () => {
+  it("replaces single placeholder", () => {
     const template = "Use this URL: {{WEBHOOK_URL}}";
     const result = processConfigurationMessage(
       template,
@@ -61,19 +62,19 @@ describe("processConfigurationMessage", () => {
     );
   });
 
-  test("replaces multiple placeholders", () => {
+  it("replaces multiple placeholders", () => {
     const template = "URL: {{WEBHOOK_URL}} and again: {{WEBHOOK_URL}}";
     const result = processConfigurationMessage(
       template,
       456,
-      "https://test.com"
+      "https://it.com"
     );
     expect(result).toBe(
-      "URL: https://test.com/send-notifications/456 and again: https://test.com/send-notifications/456"
+      "URL: https://it.com/send-notifications/456 and again: https://it.com/send-notifications/456"
     );
   });
 
-  test("replaces WEBHOOK_BASE_URL placeholder", () => {
+  it("replaces WEBHOOK_BASE_URL placeholder", () => {
     const template = "Base URL: {{WEBHOOK_BASE_URL}}";
     const result = processConfigurationMessage(
       template,
@@ -83,7 +84,7 @@ describe("processConfigurationMessage", () => {
     expect(result).toBe("Base URL: https://example.com/send-notifications");
   });
 
-  test("replaces USER_ID placeholder", () => {
+  it("replaces USER_ID placeholder", () => {
     const template = "Your ID: {{USER_ID}}";
     const result = processConfigurationMessage(
       template,
@@ -93,30 +94,30 @@ describe("processConfigurationMessage", () => {
     expect(result).toBe("Your ID: 789");
   });
 
-  test("replaces all three placeholders together", () => {
+  it("replaces all three placeholders together", () => {
     const template =
       "Full URL: {{WEBHOOK_URL}}, Base: {{WEBHOOK_BASE_URL}}, ID: {{USER_ID}}";
     const result = processConfigurationMessage(
       template,
       456,
-      "https://test.com"
+      "https://it.com"
     );
     expect(result).toBe(
-      "Full URL: https://test.com/send-notifications/456, Base: https://test.com/send-notifications, ID: 456"
+      "Full URL: https://it.com/send-notifications/456, Base: https://it.com/send-notifications, ID: 456"
     );
   });
 
-  test("handles template with no placeholders", () => {
+  it("handles template with no placeholders", () => {
     const template = "This is a message without placeholders";
     const result = processConfigurationMessage(
       template,
       789,
-      "https://test.com"
+      "https://it.com"
     );
     expect(result).toBe("This is a message without placeholders");
   });
 
-  test("processes complex custom configuration message with Markdown", () => {
+  it("processes complex custom configuration message with Markdown", () => {
     const template = `🎮 **Game Notifications Setup**
 
 To receive notifications from 18xx.games:
@@ -138,23 +139,23 @@ To receive notifications from 18xx.games:
     );
 
     expect(result).toMatchInlineSnapshot(`
-"🎮 **Game Notifications Setup**
+      "🎮 **Game Notifications Setup**
 
-To receive notifications from 18xx.games:
+      To receive notifications from 18xx.games:
 
-1. Go to your [18xx.games profile page](https://18xx.games/profile)
-2. Set these values:
+      1. Go to your [18xx.games profile page](https://18xx.games/profile)
+      2. Set these values:
 
-*Turn/Message Notifications*: Webhook
-*Webhook*: Custom
-*Webhook URL*: \`https://ping.vansach.me/send-notifications/123456789\`
-*Webhook User ID*: Type anything here, maybe \\"Hi\\"
+      *Turn/Message Notifications*: Webhook
+      *Webhook*: Custom
+      *Webhook URL*: \`https://ping.vansach.me/send-notifications/123456789\`
+      *Webhook User ID*: Type anything here, maybe "Hi"
 
-🚀 You're all set! You'll receive notifications here when it's your turn."
-`);
+      🚀 You're all set! You'll receive notifications here when it's your turn."
+    `);
   });
 
-  test("processes template with all placeholders for flexible setup", () => {
+  it("processes template with all placeholders for flexible setup", () => {
     const template = `📬 **Advanced Webhook Setup**
 
 Choose your setup method:

@@ -1,17 +1,18 @@
 import { Env } from './types';
 
-jest.mock('./lib/bot_repository', () => ({
-  getBotInstanceById: jest.fn(),
+vi.mock('./lib/bot_repository', () => ({
+  getBotInstanceById: vi.fn(),
 }));
 
-jest.mock('./routes/process-updates', () => ({
-  handleProcessUpdates: jest.fn(),
+vi.mock('./routes/process-updates', () => ({
+  handleProcessUpdates: vi.fn(),
 }));
 
-jest.mock('./routes/send-notifications', () => ({
-  handleSendNotifications: jest.fn(),
+vi.mock('./routes/send-notifications', () => ({
+  handleSendNotifications: vi.fn(),
 }));
 
+import { describe, it, expect, vi } from 'vitest';
 import worker from './index';
 import { getBotInstanceById } from './lib/bot_repository';
 import { handleProcessUpdates } from './routes/process-updates';
@@ -23,27 +24,27 @@ describe('Cloudflare Workers Handler', () => {
   let mockExecutionContext: any;
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
 
     mockBot = {
-      processUpdate: jest.fn(),
-      sendMessage: jest.fn(),
+      processUpdate: vi.fn(),
+      sendMessage: vi.fn(),
     };
-    (getBotInstanceById as jest.Mock).mockImplementation((botId: string) => {
+    (getBotInstanceById as any).mockImplementation((botId: string) => {
       const knownBots = ['18xx.games', 'my-bot', 'test-bot'];
       return knownBots.includes(botId) ? Promise.resolve(mockBot) : Promise.resolve(undefined);
     });
     
     mockEnv = {
       BOT_CONFIG: {
-        get: jest.fn(),
+        get: vi.fn(),
       } as any,
     };
     
     mockExecutionContext = {};
 
-    (handleProcessUpdates as jest.Mock).mockResolvedValue(new Response('OK', { status: 200 }));
-    (handleSendNotifications as jest.Mock).mockImplementation(async (request: Request, env: Env, botId: string, chatId?: number) => {
+    (handleProcessUpdates as any).mockResolvedValue(new Response('OK', { status: 200 }));
+    (handleSendNotifications as any).mockImplementation(async (request: Request, env: Env, botId: string, chatId?: number) => {
       const knownBots = ['18xx.games', 'my-bot', 'test-bot'];
       if (!knownBots.includes(botId)) {
         return new Response('Not found', { status: 404 });

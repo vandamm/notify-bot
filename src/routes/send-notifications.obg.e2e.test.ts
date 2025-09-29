@@ -1,11 +1,12 @@
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { handleSendNotifications } from './send-notifications';
 
 describe('E2E: OBG parser via send-notifications route', () => {
   const originalFetch = global.fetch as any;
 
   beforeEach(() => {
-    jest.clearAllMocks();
-    (global as any).fetch = jest.fn().mockResolvedValue({
+    vi.clearAllMocks();
+    (global as any).fetch = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({
         ok: true,
@@ -26,7 +27,7 @@ describe('E2E: OBG parser via send-notifications route', () => {
   it('should parse form-encoded body and send message using obg parser', async () => {
     const mockEnv = {
       BOT_CONFIG: {
-        get: jest.fn().mockResolvedValue({
+        get: vi.fn().mockResolvedValue({
           token: 'bottest-token',
           parser: 'obg',
           createdAt: '2024-01-01T00:00:00.000Z',
@@ -35,9 +36,13 @@ describe('E2E: OBG parser via send-notifications route', () => {
       }
     } as any;
 
-    const mockRequest = {
-      text: jest.fn().mockResolvedValue('content=This+is+a+test+message+from+Online+Board+Gamers'),
-    } as any as Request;
+    const mockRequest = new Request('https://example.com/test', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/x-www-form-urlencoded'
+      },
+      body: 'content=This+is+a+test+message+from+Online+Board+Gamers'
+    });
 
     const response = await handleSendNotifications(mockRequest, mockEnv, 'obg-bot', '123456789');
 
@@ -45,10 +50,9 @@ describe('E2E: OBG parser via send-notifications route', () => {
     const body = await response.text();
     expect(body).toBe('OK');
 
-    expect(mockRequest.text).toHaveBeenCalled();
 
     expect((global as any).fetch).toHaveBeenCalled();
-    const [, options] = ((global as any).fetch as jest.Mock).mock.calls[0];
+    const [, options] = ((global as any).fetch as any).mock.calls[0];
     const sentPayload = JSON.parse(options.body);
     expect(sentPayload.chat_id).toBe(123456789);
     expect(sentPayload.text).toBe('This is a test message from Online Board Gamers');
@@ -57,7 +61,7 @@ describe('E2E: OBG parser via send-notifications route', () => {
   it('should return 422 when content param missing', async () => {
     const mockEnv = {
       BOT_CONFIG: {
-        get: jest.fn().mockResolvedValue({
+        get: vi.fn().mockResolvedValue({
           token: 'bottest-token',
           parser: 'obg',
           createdAt: '2024-01-01T00:00:00.000Z',
@@ -66,9 +70,13 @@ describe('E2E: OBG parser via send-notifications route', () => {
       }
     } as any;
 
-    const mockRequest = {
-      text: jest.fn().mockResolvedValue('foo=bar&baz=qux'),
-    } as any as Request;
+    const mockRequest = new Request('https://example.com/test', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/x-www-form-urlencoded'
+      },
+      body: 'foo=bar&baz=qux'
+    });
 
     const response = await handleSendNotifications(mockRequest, mockEnv, 'obg-bot', '123456789');
 

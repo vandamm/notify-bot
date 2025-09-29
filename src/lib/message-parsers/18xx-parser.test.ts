@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach } from 'vitest';
 import { EighteenxxParser } from './18xx-parser';
 
 describe('EighteenxxParser', () => {

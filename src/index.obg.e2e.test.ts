@@ -1,7 +1,8 @@
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import worker from './index';
 import { Env } from './types';
 
-jest.unmock('./lib/bot_repository');
+vi.unmock('./lib/bot_repository');
 
 describe('Router E2E: OBG form body', () => {
   const originalFetch = global.fetch as any;
@@ -9,8 +10,8 @@ describe('Router E2E: OBG form body', () => {
   let mockExecutionContext: any;
 
   beforeEach(() => {
-    jest.clearAllMocks();
-    (global as any).fetch = jest.fn().mockResolvedValue({
+    vi.clearAllMocks();
+    (global as any).fetch = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({
         ok: true,
@@ -25,7 +26,7 @@ describe('Router E2E: OBG form body', () => {
 
     mockEnv = {
       BOT_CONFIG: {
-        get: jest.fn().mockImplementation((botId: string) => {
+        get: vi.fn().mockImplementation((botId: string) => {
           if (botId === 'obg-bot') {
             return Promise.resolve({
               token: 'bottest-token',
@@ -59,7 +60,7 @@ describe('Router E2E: OBG form body', () => {
 
     expect(response.status).toBe(200);
     expect((global as any).fetch).toHaveBeenCalled();
-    const [, options] = ((global as any).fetch as jest.Mock).mock.calls[0];
+    const [, options] = ((global as any).fetch as any).mock.calls[0];
     const payload = JSON.parse(options.body);
     expect(payload.chat_id).toBe(123456789);
     expect(payload.text).toBe('This is a test message from Online Board Gamers');

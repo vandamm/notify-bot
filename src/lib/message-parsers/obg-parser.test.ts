@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach } from 'vitest';
 import { ObgParser } from './obg-parser';
 
 describe('ObgParser', () => {
@@ -11,8 +12,8 @@ describe('ObgParser', () => {
     expect(parser.name).toBe('obg');
   });
 
-  it('should parse urlencoded content field', () => {
-    const message = { text: 'content=This+is+a+test+message+from+Online+Board+Gamers' };
+  it('should parse message with content field', () => {
+    const message = { content: 'This is a test message from Online Board Gamers' };
     const result = parser.parse(message);
 
     expect(result.valid).toBe(true);
@@ -28,12 +29,12 @@ describe('ObgParser', () => {
     expect(result.content).toBe('Invalid message format');
   });
 
-  it('should return invalid when content param missing', () => {
-    const message = { text: 'foo=bar&baz=qux' };
+  it('should return invalid when content field missing', () => {
+    const message = { foo: 'bar', baz: 'qux' };
     const result = parser.parse(message);
 
     expect(result.valid).toBe(false);
-    expect(result.content).toBe('Message format not recognized');
+    expect(result.content).toBe('Invalid message format');
   });
 });
 
