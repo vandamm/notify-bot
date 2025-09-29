@@ -20,10 +20,20 @@ function resolveChatId(routeChatId?: number, parsedMessage?: ParsedMessage): num
 
 async function parseRequestBody(request: Request): Promise<object> {
   try {
+    const contentType = request.headers.get('content-type') || '';
+    
+    if (contentType.includes('application/x-www-form-urlencoded')) {
+      return formDataToObject(await request.formData());
+    }
+    if (contentType.includes('application/json')) {
+      return await request.json();
+    }
+    
     const text = await request.text();
     if (!text.trim()) {
       return {};
     }
+    
     try {
       return JSON.parse(text);
     } catch (error) {
@@ -84,3 +94,15 @@ export async function handleSendNotifications(request: Request, env: Env, botId:
     return new Response('Internal server error', { status: 500 });
   }
 } 
+
+function formDataToObject(formData: FormData): Record<string, string> {
+  const result: Record<string, string> = {};
+  
+  for (const [key, value] of formData.entries()) {
+    if (typeof value === 'string') {
+      result[key] = value;
+    }
+  }
+  
+  return result;
+}

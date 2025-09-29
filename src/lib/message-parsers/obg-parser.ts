@@ -1,7 +1,7 @@
 import { MessageParser, ParsedMessage } from './types';
 
 interface IncomingObgMessage {
-  text: string;
+  content: string;
 }
 
 export class ObgParser implements MessageParser {
@@ -14,20 +14,9 @@ export class ObgParser implements MessageParser {
         valid: false
       };
     }
-
-    const raw = message.text as string;
-    const params = new URLSearchParams(raw);
-    const content = params.get('content');
-
-    if (!content) {
-      return {
-        content: 'Message format not recognized',
-        valid: false
-      };
-    }
-
+  
     return {
-      content,
+      content: message.content,
       valid: true,
       metadata: {
         messageType: 'obg',
@@ -37,7 +26,7 @@ export class ObgParser implements MessageParser {
   }
 
   private isValidMessage(message: any): message is IncomingObgMessage {
-    return message && typeof message.text === 'string';
+    return message && typeof message.content === 'string';
   }
 }
 
