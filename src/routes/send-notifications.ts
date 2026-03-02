@@ -1,7 +1,21 @@
 import { getBotInstanceById } from '../lib/bot_repository';
-import { notificationMessage } from '../lib/templates';
 import { Env } from '../types';
 import { ParsedMessage } from '../lib/message-parsers/types';
+
+const LEADING_URL_PATTERN = /^(https?:\/\/\S+)\s*([\s\S]*)$/;
+
+function extractLeadingUrl(parsedMessage: ParsedMessage): ParsedMessage {
+  if (parsedMessage.link) return parsedMessage;
+
+  const match = parsedMessage.content.match(LEADING_URL_PATTERN);
+  if (!match) return parsedMessage;
+
+  return {
+    ...parsedMessage,
+    link: match[1],
+    content: match[2].trim(),
+  };
+}
 
 function resolveChatId(routeChatId?: number, parsedMessage?: ParsedMessage): number|undefined {
   if (routeChatId && !isNaN(routeChatId)) {
@@ -54,7 +68,7 @@ export async function handleSendNotifications(request: Request, env: Env, botId:
     }
 
     const body = await parseRequestBody(request);
-    const parsedMessage = bot.parseMessage(body as object);
+    const parsedMessage = extractLeadingUrl(bot.parseMessage(body as object));
 
     console.log({
       message: 'Notification',
@@ -73,11 +87,7 @@ export async function handleSendNotifications(request: Request, env: Env, botId:
       return new Response('Invalid chat ID', { status: 400 });
     }
 
-    const messageText = parsedMessage.link 
-      ? notificationMessage(parsedMessage.content, parsedMessage.link)
-      : parsedMessage.content;
-
-    await bot.sendMessage(targetChatId, messageText);
+    await bot.sendMessage(targetChatId, parsedMessage.content, parsedMessage.link);
 
     return new Response('OK', { status: 200 });
   } catch (e) {

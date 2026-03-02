@@ -27,7 +27,8 @@ export async function getBotInstanceById(botId: string, env: Env): Promise<Bot|u
   }
 
   const parser = parserRegistry.get(config.parser || 'default');
-  const bot = new Bot(config.token, parser, config.configurationMessage);
+  const linkPreview = config.linkPreview !== false;
+  const bot = new Bot(config.token, parser, config.configurationMessage, linkPreview);
   botInstances.set(botId, bot);
 
   return bot;

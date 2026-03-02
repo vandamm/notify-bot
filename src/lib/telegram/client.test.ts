@@ -114,6 +114,59 @@ describe('TelegramClient', () => {
       );
     });
 
+    it('should include link_preview_options when linkPreviewUrl is provided', async () => {
+      const mockResponse = {
+        ok: true,
+        result: {
+          message_id: 1,
+          date: 1234567890,
+          chat: { id: 123, type: 'private' },
+          text: 'Your turn in 1830'
+        }
+      };
+
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: async () => mockResponse,
+      } as unknown as Response);
+
+      await client.sendMessage(123, 'Your turn in 1830', { linkPreviewUrl: 'https://18xx.games/game/42' });
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'https://api.telegram.org/bottest-token/sendMessage',
+        expect.objectContaining({
+          body: JSON.stringify({
+            chat_id: 123,
+            text: 'Your turn in 1830',
+            parse_mode: 'Markdown',
+            link_preview_options: { url: 'https://18xx.games/game/42' }
+          })
+        })
+      );
+    });
+
+    it('should not include link_preview_options when linkPreviewUrl is not provided', async () => {
+      const mockResponse = {
+        ok: true,
+        result: {
+          message_id: 1,
+          date: 1234567890,
+          chat: { id: 123, type: 'private' },
+          text: 'Test message'
+        }
+      };
+
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: async () => mockResponse,
+      } as unknown as Response);
+
+      await client.sendMessage(123, 'Test message');
+
+      const callBody = JSON.parse((mockFetch.mock.calls[0][1] as any).body);
+      expect(callBody).not.toHaveProperty('link_preview_options');
+    });
+
     it('should use custom parse mode', async () => {
       const mockResponse = {
         ok: true,
