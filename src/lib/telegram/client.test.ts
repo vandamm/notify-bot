@@ -41,7 +41,8 @@ describe('TelegramClient', () => {
           body: JSON.stringify({
             chat_id: 123,
             text: 'Test message',
-            parse_mode: 'Markdown'
+            parse_mode: 'Markdown',
+            disable_web_page_preview: true,
           })
         })
       );
@@ -138,7 +139,8 @@ describe('TelegramClient', () => {
           body: JSON.stringify({
             chat_id: 123,
             text: 'Test message',
-            parse_mode: 'HTML'
+            parse_mode: 'HTML',
+            disable_web_page_preview: true,
           })
         })
       );

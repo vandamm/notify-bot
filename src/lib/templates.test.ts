@@ -17,22 +17,18 @@ describe("DEFAULT_CONFIGURATION_MESSAGE", () => {
 });
 
 describe("notificationMessage", () => {
-  it("combines text and link without Markdown formatting", () => {
+  it("combines text and link as Markdown inline link", () => {
     const result = notificationMessage("Hello world", "https://example.com");
-    expect(result).toBe(
-      `Hello world
-https://example.com`
-    );
+    expect(result).toBe("[Hello world](https://example.com)");
   });
 
-  it("handles special characters without escaping", () => {
+  it("formats game notification as inline link", () => {
     const result = notificationMessage(
-      "Test with special chars: ()[]{}!",
-      "https://example.com/path?param=value"
+      "Wir sind das Volk! #198359 (Westjj) - Your turn",
+      "https://rally-the-troops.com/wir-sind-das-volk/play.html?game=198359&role=West"
     );
     expect(result).toBe(
-      `Test with special chars: ()[]{}!
-https://example.com/path?param=value`
+      "[Wir sind das Volk! #198359 (Westjj) - Your turn](https://rally-the-troops.com/wir-sind-das-volk/play.html?game=198359&role=West)"
     );
   });
 });

@@ -1,13 +1,24 @@
 import { MessageParser, ParsedMessage } from './types';
 
-const CHAT_ID_PATTERN = /^<@(?<userId>\d+)> (?<text>.*)$/;
+const CHAT_ID_PATTERN = /^<@(?<userId>\d+)> (?<text>.*)$/s;
+const URL_PREFIX_PATTERN = /^(https?:\/\/\S+) - (.+)$/s;
 
 export class DefaultParser implements MessageParser {
   name = 'default';
 
   parse(message: object): ParsedMessage {
-    const content = this.extractContent(message);
-    const link = this.extractLink(message);
+    const rawContent = this.extractContent(message);
+    let link = this.extractLink(message);
+
+    let content = rawContent;
+    if (!link) {
+      const extracted = this.extractUrlFromContent(rawContent);
+      if (extracted.url) {
+        link = extracted.url;
+        content = extracted.text;
+      }
+    }
+
     const { parsedContent, userId } = this.parseContentWithChatId(content);
 
     const metadata: any = { originalMessage: message };
@@ -21,6 +32,14 @@ export class DefaultParser implements MessageParser {
       valid: true,
       metadata
     };
+  }
+
+  private extractUrlFromContent(content: string): { text: string; url?: string } {
+    const match = content.match(URL_PREFIX_PATTERN);
+    if (match) {
+      return { url: match[1], text: match[2] };
+    }
+    return { text: content };
   }
 
   private extractContent(message: object): string {

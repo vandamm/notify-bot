@@ -71,6 +71,36 @@ describe('DefaultParser', () => {
     expect(result.content).toBe('simple string');
   });
 
+  describe('URL extraction from content', () => {
+    it('should extract URL from content that starts with a URL', () => {
+      const message = { text: 'https://rally-the-troops.com/play.html?game=1 - My Game #1 - Your turn' };
+      const result = parser.parse(message);
+
+      expect(result.valid).toBe(true);
+      expect(result.link).toBe('https://rally-the-troops.com/play.html?game=1');
+      expect(result.content).toBe('My Game #1 - Your turn');
+    });
+
+    it('should not extract URL when link field is already provided', () => {
+      const message = {
+        text: 'https://example.com/path - Some text',
+        link: 'https://explicit-link.com',
+      };
+      const result = parser.parse(message);
+
+      expect(result.link).toBe('https://explicit-link.com');
+      expect(result.content).toBe('https://example.com/path - Some text');
+    });
+
+    it('should not modify content when it does not start with a URL', () => {
+      const message = { text: 'My Game #1 - Your turn' };
+      const result = parser.parse(message);
+
+      expect(result.link).toBeUndefined();
+      expect(result.content).toBe('My Game #1 - Your turn');
+    });
+  });
+
   describe('Chat ID pattern support', () => {
     it('should extract userId from text field with chatId pattern', () => {
       const message = { text: '<@123456789> This is a test message' };

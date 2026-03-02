@@ -14,7 +14,8 @@ export class TelegramClient {
     const body = {
       chat_id: chatId,
       text: text,
-      parse_mode: options.parseMode || 'Markdown'
+      parse_mode: options.parseMode || 'Markdown',
+      disable_web_page_preview: true,
     };
 
     const response = await fetch(url, {
