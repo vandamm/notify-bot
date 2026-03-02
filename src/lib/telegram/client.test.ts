@@ -145,5 +145,61 @@ describe('TelegramClient', () => {
         })
       );
     });
+
+    it('should add inline keyboard button when linkUrl is provided', async () => {
+      const mockResponse = {
+        ok: true,
+        result: {
+          message_id: 1,
+          date: 1234567890,
+          chat: { id: 123, type: 'private' },
+          text: 'Your turn'
+        }
+      };
+
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: async () => mockResponse,
+      } as unknown as Response);
+
+      await client.sendMessage(123, 'Your turn', { linkUrl: 'https://example.com/game/1' });
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'https://api.telegram.org/bottest-token/sendMessage',
+        expect.objectContaining({
+          body: JSON.stringify({
+            chat_id: 123,
+            text: 'Your turn',
+            parse_mode: 'Markdown',
+            disable_web_page_preview: true,
+            reply_markup: {
+              inline_keyboard: [[{ text: 'Open', url: 'https://example.com/game/1' }]],
+            },
+          })
+        })
+      );
+    });
+
+    it('should not add reply_markup when linkUrl is not provided', async () => {
+      const mockResponse = {
+        ok: true,
+        result: {
+          message_id: 1,
+          date: 1234567890,
+          chat: { id: 123, type: 'private' },
+          text: 'Test message'
+        }
+      };
+
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: async () => mockResponse,
+      } as unknown as Response);
+
+      await client.sendMessage(123, 'Test message');
+
+      const calledBody = JSON.parse((mockFetch.mock.calls[0][1] as any).body);
+      expect(calledBody.reply_markup).toBeUndefined();
+    });
   });
 }); 

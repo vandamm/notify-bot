@@ -30,9 +30,10 @@ export class Bot {
     }
   }
 
-  async sendMessage(chatId: number, text: string): Promise<Message> {
+  async sendMessage(chatId: number, text: string, linkUrl?: string): Promise<Message> {
     return await this.client.sendMessage(chatId, text, {
       parseMode: 'Markdown',
+      linkUrl,
     });
   }
 

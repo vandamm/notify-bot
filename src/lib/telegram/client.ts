@@ -9,14 +9,20 @@ export class TelegramClient {
     this.baseUrl = `https://api.telegram.org/bot${token}`;
   }
 
-  async sendMessage(chatId: number, text: string, options: { parseMode?: string } = {}): Promise<Message> {
+  async sendMessage(chatId: number, text: string, options: { parseMode?: string; linkUrl?: string } = {}): Promise<Message> {
     const url = `${this.baseUrl}/sendMessage`;
-    const body = {
+    const body: Record<string, unknown> = {
       chat_id: chatId,
       text: text,
       parse_mode: options.parseMode || 'Markdown',
       disable_web_page_preview: true,
     };
+
+    if (options.linkUrl) {
+      body.reply_markup = {
+        inline_keyboard: [[{ text: 'Open', url: options.linkUrl }]],
+      };
+    }
 
     const response = await fetch(url, {
       method: 'POST',

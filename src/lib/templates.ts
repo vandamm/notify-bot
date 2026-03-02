@@ -23,6 +23,3 @@ export function processConfigurationMessage(template: string, chatId: number, ba
     .replace(/\{\{USER_ID\}\}/g, userId);
 }
 
-export function notificationMessage(text: string, link: string): string {
-  return `[${text}](${link})`;
-}

@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
   processConfigurationMessage,
-  notificationMessage,
   DEFAULT_CONFIGURATION_MESSAGE,
 } from "./templates";
 
@@ -13,23 +12,6 @@ describe("DEFAULT_CONFIGURATION_MESSAGE", () => {
   it("uses Markdown formatting", () => {
     expect(DEFAULT_CONFIGURATION_MESSAGE).toContain("**");
     expect(DEFAULT_CONFIGURATION_MESSAGE).toContain("`");
-  });
-});
-
-describe("notificationMessage", () => {
-  it("combines text and link as Markdown inline link", () => {
-    const result = notificationMessage("Hello world", "https://example.com");
-    expect(result).toBe("[Hello world](https://example.com)");
-  });
-
-  it("formats game notification as inline link", () => {
-    const result = notificationMessage(
-      "Wir sind das Volk! #198359 (Westjj) - Your turn",
-      "https://rally-the-troops.com/wir-sind-das-volk/play.html?game=198359&role=West"
-    );
-    expect(result).toBe(
-      "[Wir sind das Volk! #198359 (Westjj) - Your turn](https://rally-the-troops.com/wir-sind-das-volk/play.html?game=198359&role=West)"
-    );
   });
 });
 

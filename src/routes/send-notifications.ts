@@ -1,5 +1,4 @@
 import { getBotInstanceById } from '../lib/bot_repository';
-import { notificationMessage } from '../lib/templates';
 import { Env } from '../types';
 import { ParsedMessage } from '../lib/message-parsers/types';
 
@@ -73,11 +72,7 @@ export async function handleSendNotifications(request: Request, env: Env, botId:
       return new Response('Invalid chat ID', { status: 400 });
     }
 
-    const messageText = parsedMessage.link 
-      ? notificationMessage(parsedMessage.content, parsedMessage.link)
-      : parsedMessage.content;
-
-    await bot.sendMessage(targetChatId, messageText);
+    await bot.sendMessage(targetChatId, parsedMessage.content, parsedMessage.link);
 
     return new Response('OK', { status: 200 });
   } catch (e) {

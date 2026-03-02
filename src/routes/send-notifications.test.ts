@@ -54,7 +54,8 @@ describe('handleSendNotifications', () => {
       expect(mockBot.parseMessage).toHaveBeenCalledWith(mockMessageBody);
       expect(mockBot.sendMessage).toHaveBeenCalledWith(
         123456789,
-        expect.stringContaining('1830')
+        '1830 turn completed by John',
+        'https://example.com/game/123'
       );
     });
 
@@ -115,7 +116,7 @@ describe('handleSendNotifications', () => {
 
       expect(response.status).toBe(200);
       expect(await response.text()).toBe('OK');
-      expect(mockBot.sendMessage).toHaveBeenCalledWith(139429205, 'This is a test notification from 18xx.games.');
+      expect(mockBot.sendMessage).toHaveBeenCalledWith(139429205, 'This is a test notification from 18xx.games.', undefined);
     });
 
     it('should fallback to message metadata when route chat ID is invalid', async () => {
@@ -149,7 +150,7 @@ describe('handleSendNotifications', () => {
 
       expect(response.status).toBe(200);
       expect(await response.text()).toBe('OK');
-      expect(mockBot.sendMessage).toHaveBeenCalledWith(987654321, 'Another notification from 18xx.games.');
+      expect(mockBot.sendMessage).toHaveBeenCalledWith(987654321, 'Another notification from 18xx.games.', undefined);
     });
 
     it('should prefer route chat ID over message metadata when both are valid', async () => {
@@ -183,7 +184,7 @@ describe('handleSendNotifications', () => {
 
       expect(response.status).toBe(200);
       expect(await response.text()).toBe('OK');
-      expect(mockBot.sendMessage).toHaveBeenCalledWith(555666777, 'This is a test notification from 18xx.games.');
+      expect(mockBot.sendMessage).toHaveBeenCalledWith(555666777, 'This is a test notification from 18xx.games.', undefined);
     });
   });
 
@@ -209,7 +210,7 @@ describe('handleSendNotifications', () => {
       expect(response.status).toBe(200);
       expect(await response.text()).toBe('OK');
       expect(mockBot.parseMessage).toHaveBeenCalledWith({ text: 'Test message!' });
-      expect(mockBot.sendMessage).toHaveBeenCalledWith(123456789, 'Test message!');
+      expect(mockBot.sendMessage).toHaveBeenCalledWith(123456789, 'Test message!', undefined);
     });
   });
 
