@@ -2,7 +2,7 @@ import { getBotInstanceById } from '../lib/bot_repository';
 import { Env } from '../types';
 import { ParsedMessage } from '../lib/message-parsers/types';
 
-const LEADING_URL_PATTERN = /^(https?:\/\/\S+)\s*([\s\S]*)$/;
+const LEADING_URL_PATTERN = /^(https?:\/\/\S+)(?:\s+-\s+|\s+)([\s\S]*)$/;
 
 function extractLeadingUrl(parsedMessage: ParsedMessage): ParsedMessage {
   if (parsedMessage.link) return parsedMessage;

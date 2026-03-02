@@ -189,7 +189,34 @@ describe('handleSendNotifications', () => {
   });
 
   describe('Leading URL extraction', () => {
-    it('should extract leading URL from content when no link is present', async () => {
+    it('should extract leading URL and strip " - " separator', async () => {
+      const mockRequest = new Request('https://example.com/test', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ text: 'https://rally-the-troops.com/game/42 - Wir sind das Volk! #42 - Your turn' })
+      });
+
+      const mockBot = {
+        sendMessage: vi.fn(),
+        parseMessage: vi.fn().mockReturnValue({
+          content: 'https://rally-the-troops.com/game/42 - Wir sind das Volk! #42 - Your turn',
+          valid: true
+        })
+      } as any;
+
+      mockGetBotInstanceById.mockResolvedValue(mockBot);
+
+      const response = await handleSendNotifications(mockRequest, mockEnv, 'rtt', '123456789');
+
+      expect(response.status).toBe(200);
+      expect(mockBot.sendMessage).toHaveBeenCalledWith(
+        123456789,
+        'Wir sind das Volk! #42 - Your turn',
+        'https://rally-the-troops.com/game/42'
+      );
+    });
+
+    it('should extract leading URL with plain space separator', async () => {
       const mockRequest = new Request('https://example.com/test', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
