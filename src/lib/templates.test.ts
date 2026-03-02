@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
   processConfigurationMessage,
-  notificationMessage,
   DEFAULT_CONFIGURATION_MESSAGE,
 } from "./templates";
 
@@ -13,27 +12,6 @@ describe("DEFAULT_CONFIGURATION_MESSAGE", () => {
   it("uses Markdown formatting", () => {
     expect(DEFAULT_CONFIGURATION_MESSAGE).toContain("**");
     expect(DEFAULT_CONFIGURATION_MESSAGE).toContain("`");
-  });
-});
-
-describe("notificationMessage", () => {
-  it("combines text and link without Markdown formatting", () => {
-    const result = notificationMessage("Hello world", "https://example.com");
-    expect(result).toBe(
-      `Hello world
-https://example.com`
-    );
-  });
-
-  it("handles special characters without escaping", () => {
-    const result = notificationMessage(
-      "Test with special chars: ()[]{}!",
-      "https://example.com/path?param=value"
-    );
-    expect(result).toBe(
-      `Test with special chars: ()[]{}!
-https://example.com/path?param=value`
-    );
   });
 });
 

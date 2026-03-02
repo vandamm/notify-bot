@@ -54,7 +54,8 @@ describe('handleSendNotifications', () => {
       expect(mockBot.parseMessage).toHaveBeenCalledWith(mockMessageBody);
       expect(mockBot.sendMessage).toHaveBeenCalledWith(
         123456789,
-        expect.stringContaining('1830')
+        '1830 turn completed by John',
+        'https://example.com/game/123'
       );
     });
 
@@ -115,7 +116,7 @@ describe('handleSendNotifications', () => {
 
       expect(response.status).toBe(200);
       expect(await response.text()).toBe('OK');
-      expect(mockBot.sendMessage).toHaveBeenCalledWith(139429205, 'This is a test notification from 18xx.games.');
+      expect(mockBot.sendMessage).toHaveBeenCalledWith(139429205, 'This is a test notification from 18xx.games.', undefined);
     });
 
     it('should fallback to message metadata when route chat ID is invalid', async () => {
@@ -149,7 +150,7 @@ describe('handleSendNotifications', () => {
 
       expect(response.status).toBe(200);
       expect(await response.text()).toBe('OK');
-      expect(mockBot.sendMessage).toHaveBeenCalledWith(987654321, 'Another notification from 18xx.games.');
+      expect(mockBot.sendMessage).toHaveBeenCalledWith(987654321, 'Another notification from 18xx.games.', undefined);
     });
 
     it('should prefer route chat ID over message metadata when both are valid', async () => {
@@ -183,7 +184,63 @@ describe('handleSendNotifications', () => {
 
       expect(response.status).toBe(200);
       expect(await response.text()).toBe('OK');
-      expect(mockBot.sendMessage).toHaveBeenCalledWith(555666777, 'This is a test notification from 18xx.games.');
+      expect(mockBot.sendMessage).toHaveBeenCalledWith(555666777, 'This is a test notification from 18xx.games.', undefined);
+    });
+  });
+
+  describe('Leading URL extraction', () => {
+    it('should extract leading URL from content when no link is present', async () => {
+      const mockRequest = new Request('https://example.com/test', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ text: 'https://example.com/game/42 Your turn in 1830' })
+      });
+
+      const mockBot = {
+        sendMessage: vi.fn(),
+        parseMessage: vi.fn().mockReturnValue({
+          content: 'https://example.com/game/42 Your turn in 1830',
+          valid: true
+        })
+      } as any;
+
+      mockGetBotInstanceById.mockResolvedValue(mockBot);
+
+      const response = await handleSendNotifications(mockRequest, mockEnv, '18xx.games', '123456789');
+
+      expect(response.status).toBe(200);
+      expect(mockBot.sendMessage).toHaveBeenCalledWith(
+        123456789,
+        'Your turn in 1830',
+        'https://example.com/game/42'
+      );
+    });
+
+    it('should not extract URL when link is already set by parser', async () => {
+      const mockRequest = new Request('https://example.com/test', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({})
+      });
+
+      const mockBot = {
+        sendMessage: vi.fn(),
+        parseMessage: vi.fn().mockReturnValue({
+          content: 'https://example.com/other Your turn',
+          link: 'https://example.com/canonical',
+          valid: true
+        })
+      } as any;
+
+      mockGetBotInstanceById.mockResolvedValue(mockBot);
+
+      await handleSendNotifications(mockRequest, mockEnv, '18xx.games', '123456789');
+
+      expect(mockBot.sendMessage).toHaveBeenCalledWith(
+        123456789,
+        'https://example.com/other Your turn',
+        'https://example.com/canonical'
+      );
     });
   });
 
@@ -209,7 +266,7 @@ describe('handleSendNotifications', () => {
       expect(response.status).toBe(200);
       expect(await response.text()).toBe('OK');
       expect(mockBot.parseMessage).toHaveBeenCalledWith({ text: 'Test message!' });
-      expect(mockBot.sendMessage).toHaveBeenCalledWith(123456789, 'Test message!');
+      expect(mockBot.sendMessage).toHaveBeenCalledWith(123456789, 'Test message!', undefined);
     });
   });
 

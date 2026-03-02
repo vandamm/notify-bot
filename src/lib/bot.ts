@@ -7,13 +7,15 @@ export class Bot {
   private client: TelegramClient;
   private parser: MessageParser;
   private configurationMessage: string;
+  private linkPreview: boolean;
 
-  constructor(accessToken: string, parser: MessageParser, configurationMessage: string = DEFAULT_CONFIGURATION_MESSAGE) {
+  constructor(accessToken: string, parser: MessageParser, configurationMessage: string = DEFAULT_CONFIGURATION_MESSAGE, linkPreview: boolean = true) {
     if (!accessToken) throw new Error('Access token undefined');
 
     this.client = new TelegramClient(accessToken);
     this.parser = parser;
     this.configurationMessage = configurationMessage;
+    this.linkPreview = linkPreview;
   }
 
   async processUpdate(update: Update, baseUrl: string) {
@@ -30,9 +32,10 @@ export class Bot {
     }
   }
 
-  async sendMessage(chatId: number, text: string): Promise<Message> {
+  async sendMessage(chatId: number, text: string, link?: string): Promise<Message> {
     return await this.client.sendMessage(chatId, text, {
       parseMode: 'Markdown',
+      ...(link && this.linkPreview ? { linkPreviewUrl: link } : {}),
     });
   }
 
