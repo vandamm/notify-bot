@@ -1,21 +1,26 @@
 import { MessageParser, ParsedMessage } from './types';
 
-const LEADING_URL_PATTERN = /^(https?:\/\/\S+)(?:\s+-\s+|\s+)([\s\S]*)$/;
+const URL_WITH_SEPARATOR = /(?:\s+-\s+)?https?:\/\/\S+(?:\s+-\s+)?/;
 
-function extractLeadingUrl(result: ParsedMessage): ParsedMessage {
+function extractUrl(result: ParsedMessage): ParsedMessage {
   if (result.link) return result;
 
-  const match = result.content.match(LEADING_URL_PATTERN);
+  const match = result.content.match(URL_WITH_SEPARATOR);
   if (!match) return result;
 
-  return { ...result, link: match[1], content: match[2].trim() };
+  const urlMatch = match[0].match(/https?:\/\/\S+/)!;
+  const url = urlMatch[0];
+  const content = result.content.slice(0, match.index) + result.content.slice(match.index! + match[0].length);
+  const cleaned = content.replace(/\s+/g, ' ').trim();
+
+  return { ...result, link: url, content: cleaned };
 }
 
 export function withLinkHandling(parser: MessageParser, linkPreview: boolean): MessageParser {
   return {
     name: parser.name,
     parse(message: object): ParsedMessage {
-      const result = extractLeadingUrl(parser.parse(message));
+      const result = extractUrl(parser.parse(message));
 
       if (!linkPreview && result.link) {
         return { ...result, content: `${result.content}\n${result.link}`, link: undefined };

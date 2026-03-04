@@ -10,8 +10,8 @@ function makeParser(content: string, link?: string): MessageParser {
 }
 
 describe('withLinkHandling', () => {
-  describe('leading URL extraction', () => {
-    it('strips " - " separator between URL and content', () => {
+  describe('URL extraction', () => {
+    it('extracts leading URL with " - " separator', () => {
       const parser = makeParser('https://rally-the-troops.com/game/42 - Wir sind das Volk! #42 - Your turn');
       const result = withLinkHandling(parser, true).parse({});
 
@@ -19,11 +19,43 @@ describe('withLinkHandling', () => {
       expect(result.content).toBe('Wir sind das Volk! #42 - Your turn');
     });
 
-    it('handles plain space separator between URL and content', () => {
+    it('extracts leading URL with space separator', () => {
       const parser = makeParser('https://example.com/game/42 Your turn in 1830');
       const result = withLinkHandling(parser, true).parse({});
 
       expect(result.link).toBe('https://example.com/game/42');
+      expect(result.content).toBe('Your turn in 1830');
+    });
+
+    it('extracts URL from the middle of content', () => {
+      const parser = makeParser('Your turn in https://example.com/game/42 now');
+      const result = withLinkHandling(parser, true).parse({});
+
+      expect(result.link).toBe('https://example.com/game/42');
+      expect(result.content).toBe('Your turn in now');
+    });
+
+    it('extracts trailing URL', () => {
+      const parser = makeParser('Your turn in 1830 https://18xx.games/game/42');
+      const result = withLinkHandling(parser, true).parse({});
+
+      expect(result.link).toBe('https://18xx.games/game/42');
+      expect(result.content).toBe('Your turn in 1830');
+    });
+
+    it('strips " - " separator before trailing URL', () => {
+      const parser = makeParser('Your turn in 1830 - https://18xx.games/game/42');
+      const result = withLinkHandling(parser, true).parse({});
+
+      expect(result.link).toBe('https://18xx.games/game/42');
+      expect(result.content).toBe('Your turn in 1830');
+    });
+
+    it('strips " - " separator after leading URL', () => {
+      const parser = makeParser('https://18xx.games/game/42 - Your turn in 1830');
+      const result = withLinkHandling(parser, true).parse({});
+
+      expect(result.link).toBe('https://18xx.games/game/42');
       expect(result.content).toBe('Your turn in 1830');
     });
 
@@ -35,7 +67,7 @@ describe('withLinkHandling', () => {
       expect(result.content).toBe('https://example.com/other Your turn');
     });
 
-    it('does not extract when content has no leading URL', () => {
+    it('does not extract when content has no URL', () => {
       const parser = makeParser('Your turn in 1830');
       const result = withLinkHandling(parser, true).parse({});
 
@@ -63,7 +95,7 @@ describe('withLinkHandling', () => {
       expect(result.content).toBe('Your turn in 1830\nhttps://18xx.games/game/42');
     });
 
-    it('inlines extracted leading URL into content', () => {
+    it('inlines extracted URL into content', () => {
       const parser = makeParser('https://rally-the-troops.com/game/42 - Wir sind das Volk! - Your turn');
       const result = withLinkHandling(parser, false).parse({});
 
