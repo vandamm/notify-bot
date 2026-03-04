@@ -11,52 +11,52 @@ function makeParser(content: string, link?: string): MessageParser {
 
 describe('withLinkHandling', () => {
   describe('URL extraction', () => {
-    it('extracts leading URL with " - " separator', () => {
+    it('extracts leading URL with " - " separator and appends to content', () => {
       const parser = makeParser('https://rally-the-troops.com/game/42 - Wir sind das Volk! #42 - Your turn');
       const result = withLinkHandling(parser, true).parse({});
 
       expect(result.link).toBe('https://rally-the-troops.com/game/42');
-      expect(result.content).toBe('Wir sind das Volk! #42 - Your turn');
+      expect(result.content).toBe('Wir sind das Volk! #42 - Your turn\nhttps://rally-the-troops.com/game/42');
     });
 
-    it('extracts leading URL with space separator', () => {
+    it('extracts leading URL with space separator and appends to content', () => {
       const parser = makeParser('https://example.com/game/42 Your turn in 1830');
       const result = withLinkHandling(parser, true).parse({});
 
       expect(result.link).toBe('https://example.com/game/42');
-      expect(result.content).toBe('Your turn in 1830');
+      expect(result.content).toBe('Your turn in 1830\nhttps://example.com/game/42');
     });
 
-    it('extracts URL from the middle of content', () => {
+    it('extracts URL from the middle of content and appends to end', () => {
       const parser = makeParser('Your turn in https://example.com/game/42 now');
       const result = withLinkHandling(parser, true).parse({});
 
       expect(result.link).toBe('https://example.com/game/42');
-      expect(result.content).toBe('Your turn in now');
+      expect(result.content).toBe('Your turn in now\nhttps://example.com/game/42');
     });
 
-    it('extracts trailing URL', () => {
+    it('extracts trailing URL and appends to content', () => {
       const parser = makeParser('Your turn in 1830 https://18xx.games/game/42');
       const result = withLinkHandling(parser, true).parse({});
 
       expect(result.link).toBe('https://18xx.games/game/42');
-      expect(result.content).toBe('Your turn in 1830');
+      expect(result.content).toBe('Your turn in 1830\nhttps://18xx.games/game/42');
     });
 
-    it('strips " - " separator before trailing URL', () => {
+    it('strips " - " separator before trailing URL and appends to content', () => {
       const parser = makeParser('Your turn in 1830 - https://18xx.games/game/42');
       const result = withLinkHandling(parser, true).parse({});
 
       expect(result.link).toBe('https://18xx.games/game/42');
-      expect(result.content).toBe('Your turn in 1830');
+      expect(result.content).toBe('Your turn in 1830\nhttps://18xx.games/game/42');
     });
 
-    it('strips " - " separator after leading URL', () => {
+    it('strips " - " separator after leading URL and appends to content', () => {
       const parser = makeParser('https://18xx.games/game/42 - Your turn in 1830');
       const result = withLinkHandling(parser, true).parse({});
 
       expect(result.link).toBe('https://18xx.games/game/42');
-      expect(result.content).toBe('Your turn in 1830');
+      expect(result.content).toBe('Your turn in 1830\nhttps://18xx.games/game/42');
     });
 
     it('does not extract when parser already provided a link', () => {
@@ -64,7 +64,7 @@ describe('withLinkHandling', () => {
       const result = withLinkHandling(parser, true).parse({});
 
       expect(result.link).toBe('https://example.com/canonical');
-      expect(result.content).toBe('https://example.com/other Your turn');
+      expect(result.content).toBe('https://example.com/other Your turn\nhttps://example.com/canonical');
     });
 
     it('does not extract when content has no URL', () => {
@@ -77,12 +77,12 @@ describe('withLinkHandling', () => {
   });
 
   describe('linkPreview=true', () => {
-    it('keeps link separate so caller can use link_preview_options', () => {
+    it('includes link in content and keeps link for link_preview_options', () => {
       const parser = makeParser('Your turn in 1830', 'https://18xx.games/game/42');
       const result = withLinkHandling(parser, true).parse({});
 
       expect(result.link).toBe('https://18xx.games/game/42');
-      expect(result.content).toBe('Your turn in 1830');
+      expect(result.content).toBe('Your turn in 1830\nhttps://18xx.games/game/42');
     });
   });
 

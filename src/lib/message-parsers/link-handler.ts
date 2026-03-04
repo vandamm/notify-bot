@@ -22,8 +22,16 @@ export function withLinkHandling(parser: MessageParser, linkPreview: boolean): M
     parse(message: object): ParsedMessage {
       const result = extractUrl(parser.parse(message));
 
-      if (!linkPreview && result.link) {
-        return { ...result, content: `${result.content}\n${result.link}`, link: undefined };
+      if (result.link) {
+        // Always include the URL in the message text so users can see and click it.
+        // When linkPreview is true, also keep result.link so it's passed as
+        // link_preview_options to control the preview card.
+        const contentWithLink = `${result.content}\n${result.link}`;
+        return {
+          ...result,
+          content: contentWithLink,
+          link: linkPreview ? result.link : undefined,
+        };
       }
 
       return result;
