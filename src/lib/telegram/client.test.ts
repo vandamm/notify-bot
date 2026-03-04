@@ -167,6 +167,76 @@ describe('TelegramClient', () => {
       expect(callBody).not.toHaveProperty('link_preview_options');
     });
 
+    it('should include reply_markup with inline keyboard URL button when replyLink is provided', async () => {
+      const mockResponse = {
+        ok: true,
+        result: {
+          message_id: 1,
+          date: 1234567890,
+          chat: { id: 123, type: 'private' },
+          text: 'Your turn in 1830'
+        }
+      };
+
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: async () => mockResponse,
+      } as unknown as Response);
+
+      await client.sendMessage(123, 'Your turn in 1830', { replyLink: 'https://18xx.games/game/42' });
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'https://api.telegram.org/bottest-token/sendMessage',
+        expect.objectContaining({
+          body: JSON.stringify({
+            chat_id: 123,
+            text: 'Your turn in 1830',
+            parse_mode: 'Markdown',
+            reply_markup: {
+              inline_keyboard: [[{ text: 'Open', url: 'https://18xx.games/game/42' }]]
+            }
+          })
+        })
+      );
+    });
+
+    it('should include both link_preview_options and reply_markup when both are provided', async () => {
+      const mockResponse = {
+        ok: true,
+        result: {
+          message_id: 1,
+          date: 1234567890,
+          chat: { id: 123, type: 'private' },
+          text: 'Your turn in 1830'
+        }
+      };
+
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: async () => mockResponse,
+      } as unknown as Response);
+
+      await client.sendMessage(123, 'Your turn in 1830', {
+        linkPreviewUrl: 'https://18xx.games/game/42',
+        replyLink: 'https://18xx.games/game/42'
+      });
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'https://api.telegram.org/bottest-token/sendMessage',
+        expect.objectContaining({
+          body: JSON.stringify({
+            chat_id: 123,
+            text: 'Your turn in 1830',
+            parse_mode: 'Markdown',
+            link_preview_options: { url: 'https://18xx.games/game/42' },
+            reply_markup: {
+              inline_keyboard: [[{ text: 'Open', url: 'https://18xx.games/game/42' }]]
+            }
+          })
+        })
+      );
+    });
+
     it('should use custom parse mode', async () => {
       const mockResponse = {
         ok: true,
