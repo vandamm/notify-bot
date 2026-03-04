@@ -1,6 +1,6 @@
 # Architecture & Code Quality Review
 
-*Reviewed against main branch (commit 657816b) on 2026-03-04.*
+*Reviewed against main branch (commit 000978f) on 2026-03-04.*
 
 ## Overall Assessment
 
@@ -8,85 +8,55 @@ This is a well-structured, small-scope Cloudflare Workers project. The architect
 
 ---
 
-## High Priority
+## Fixed Since Last Review
 
-### 1. Module-scoped bot cache never invalidates
+The following issues from the previous review have been addressed in main:
 
-**File:** `src/lib/bot_repository.ts:6`
-
-```typescript
-const botInstances = new Map<string, Bot>();
-```
-
-The `botInstances` map is module-scoped and never evicts entries. In Cloudflare Workers, module-scoped state persists across requests within the same isolate. If you update a bot's token or parser in KV, the cached instance still uses the old config until the isolate is recycled — and there's no way to force that.
-
-**Suggestion**: Either add a TTL-based cache (check `updatedAt` from KV every few minutes), or remove the cache entirely — KV reads from the edge are fast and the volume is low.
-
-### 2. Dead code: `src/lib/18xx_message.ts` and `src/lib/18xx_message.test.ts`
-
-The legacy `Parsed18xxMessage` class was fully replaced by `EighteenxxParser` in `src/lib/message-parsers/18xx-parser.ts`. The old file is only imported by its own test. Both files should be deleted.
-
-### 3. `strict: false` in `tsconfig.json`
-
-Without strict mode, TypeScript misses null safety issues and implicit `any` types. Concrete example: `bot.ts:22` accesses `update.message.chat.id` without null checks (the `Update` type has `message?` as optional), but this compiles silently. With `strict: true`, the compiler would require a guard. The codebase is small enough that enabling strict mode would be straightforward.
+1. **Bot cache now has TTL** — `bot_repository.ts` uses a 5-minute TTL via `CachedBot` interface with `cachedAt` timestamp.
+2. **Dead code deleted** — `18xx_message.ts` has been removed.
+3. **Template URL supports multi-bot** — `processConfigurationMessage` now accepts `botId` and generates `/${botId}/${chatId}` URLs when provided.
+4. **Update type unified** — `process-updates.ts` now imports `Update` from the local `../lib/telegram/types` instead of `typegram`, consistent with `bot.ts`.
+5. **Null safety in processUpdate** — `bot.ts:20` now guards `update.message` before accessing `.chat.id`, and `isStartMessage` uses `?? false` for safe boolean coercion.
 
 ---
 
-## Medium Priority
+## Remaining Issues
 
-### 4. Two different `Update` types in use
+### High Priority
 
-**Files:** `src/routes/process-updates.ts:1` imports `Update` from `typegram`; `src/lib/bot.ts:4` imports `Update` from `./telegram/types`.
+#### 1. `strict: false` in `tsconfig.json`
 
-These are structurally different types:
-- **typegram**: `Update` is a union of 13+ specific update types. `message` is typed as `New & NonChannel & Message` with `from: User`, full `Chat`, etc.
-- **local**: `Update` is a simple interface with `update_id: number` and an optional minimal `message`.
+Without strict mode, TypeScript misses implicit `any` types and other safety issues. The codebase is small — enabling `strict: true` would be straightforward and would catch bugs at compile time rather than runtime.
 
-The route handler casts the request body as typegram's `Update`, then passes it to `Bot.processUpdate()` which expects the local `Update`. This works at runtime because the local type is a structural subset, but the types will silently diverge if either is updated.
+### Medium Priority
 
-**Suggestion**: Remove the local `Update` type and use `typegram` throughout, or (simpler) drop `typegram` entirely and keep the minimal local types — they're sufficient for the bot's current functionality.
-
-### 5. Template URL uses legacy route pattern
-
-**File:** `src/lib/templates.ts:15`
-
-```typescript
-const webhookUrl = `${baseUrl}/send-notifications/${chatId.toString()}`;
-```
-
-The `/send-notifications/:chatId` route is hardcoded to `botId = '18xx.games'` in the router (`index.ts:9`). For any other bot, the `/start` command gives users a webhook URL that routes to the wrong bot.
-
-**Suggestion**: Pass `botId` into `processConfigurationMessage` and generate `/${botId}/${chatId}` URLs.
-
-### 6. No request authentication
+#### 2. No request authentication
 
 Any caller who knows (or guesses) a valid `botId` and `chatId` can POST to `/:botId/:chatId` and trigger a Telegram message to that user. There's no webhook secret, API key, or token validation on incoming notification requests.
 
-**Suggestion**: Add a per-bot secret (stored in KV alongside the token) and validate it via an `Authorization` header or query parameter on the send-notifications endpoint.
+**Suggestion**: Add a per-bot secret (stored in KV alongside the token) and validate it via an `Authorization` header or query parameter.
 
-### 7. Verbose logging of full payloads
+#### 3. Verbose logging of full payloads
 
-**File:** `src/routes/send-notifications.ts:58-64`
+**File:** `src/routes/send-notifications.ts`
 
 The full incoming body is logged twice per request (once as `body`, once inside `parsedMessage.metadata.originalMessage`). This bloats Cloudflare log volume and may expose sensitive data.
 
 **Suggestion**: Log only `botId`, `chatId`, `parsedMessage.valid`, and a truncated content preview.
 
----
+### Low Priority
 
-## Low Priority / Code Quality
+#### 4. Consider MarkdownV2 parse mode
 
-### 8. Consider MarkdownV2 parse mode
+`bot.ts:35` hardcodes `parseMode: 'Markdown'` (legacy). Telegram recommends MarkdownV2 for new bots — it handles escaping more predictably.
 
-`bot.ts:35` hardcodes `parseMode: 'Markdown'` (legacy). Telegram recommends MarkdownV2 for new bots — it handles escaping more predictably. The `TelegramClient` already accepts `parseMode` as a configurable option, so this would be a one-line change.
+#### 5. Subtle NaN flow in chat ID resolution
 
-### 9. Subtle NaN flow in chat ID resolution
+In `send-notifications.ts`, `parseInt("abc")` returns `NaN`, which flows through to `resolveChatId` where it's caught by `!isNaN()`. This works but is unclear. Validate early and return 400 for non-numeric chat IDs.
 
-In `send-notifications.ts:48`, `parseInt("abc")` returns `NaN`, which flows through to `resolveChatId` where it's caught by `!isNaN()`. This works but is unclear. Validate early and return 400 immediately for non-numeric chat IDs.
+#### 6. Package name mismatch
 
-### 10. Package name mismatch
-
-`package.json` still says `"name": "18xx-bot"` with a description about "A simple bot to send 18xx.games notifications to Telegram" — not updated to reflect the multi-bot architecture.
+`package.json` still says `"name": "18xx-bot"` — not updated for the multi-bot architecture.
 
 ---
 
@@ -105,11 +75,7 @@ In `send-notifications.ts:48`, `parseInt("abc")` returns `NaN`, which flows thro
 
 | Priority | Action | Effort |
 |----------|--------|--------|
-| High | Delete dead `18xx_message.ts` + its test | 1 min |
-| High | Add cache TTL or remove bot instance cache | 15 min |
 | High | Enable `strict: true` in tsconfig and fix type errors | 30 min |
-| Medium | Unify `Update` type (drop one source) | 10 min |
-| Medium | Fix template URL to use `/:botId/:chatId` format | 10 min |
 | Medium | Add per-bot webhook authentication | 1 hr |
 | Medium | Reduce log verbosity in send-notifications | 5 min |
 | Low | Switch to MarkdownV2 parse mode | 5 min |
