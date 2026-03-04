@@ -33,7 +33,7 @@ export class Bot {
   async sendMessage(chatId: number, text: string, link?: string): Promise<Message> {
     return await this.client.sendMessage(chatId, text, {
       parseMode: 'Markdown',
-      ...(link ? { linkPreviewUrl: link } : {}),
+      ...(link ? { linkPreviewUrl: link, replyLink: link } : {}),
     });
   }
 
