@@ -1,4 +1,4 @@
-import { Update } from 'typegram';
+import { Update } from '../lib/telegram/types';
 import { getBotInstanceById } from '../lib/bot_repository';
 import { Env } from '../types';
 
@@ -13,7 +13,7 @@ export async function handleProcessUpdates(request: Request, env: Env, botId: st
     const url = new URL(request.url);
     const baseUrl = `${url.protocol}//${url.host}`;
 
-    await bot.processUpdate(update, baseUrl);
+    await bot.processUpdate(update, baseUrl, botId);
 
     return new Response('OK', { status: 200 });
   } catch (e) {

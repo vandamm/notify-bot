@@ -3,14 +3,21 @@ import { Env, BotConfig } from '../types';
 import { parserRegistry } from './message-parsers/registry';
 import { withLinkHandling } from './message-parsers/link-handler';
 
-const botInstances = new Map<string, Bot>();
+interface CachedBot {
+  bot: Bot;
+  cachedAt: number;
+}
+
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+const botInstances = new Map<string, CachedBot>();
 
 export async function getBotInstanceById(botId: string, env: Env): Promise<Bot|undefined> {
-  if (botInstances.has(botId)) {
-    return botInstances.get(botId)!;
+  const cached = botInstances.get(botId);
+  if (cached && Date.now() - cached.cachedAt < CACHE_TTL_MS) {
+    return cached.bot;
   }
 
-  const config: BotConfig = await env.BOT_CONFIG.get(botId, {type: 'json'});
+  const config = await env.BOT_CONFIG.get<BotConfig>(botId, {type: 'json'});
   if (!config) {
     console.error({
       message: 'Bot configuration not found',
@@ -30,7 +37,7 @@ export async function getBotInstanceById(botId: string, env: Env): Promise<Bot|u
   const linkPreview = config.linkPreview !== false;
   const parser = withLinkHandling(parserRegistry.get(config.parser || 'default'), linkPreview);
   const bot = new Bot(config.token, parser, config.configurationMessage);
-  botInstances.set(botId, bot);
+  botInstances.set(botId, { bot, cachedAt: Date.now() });
 
   return bot;
 }

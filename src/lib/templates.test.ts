@@ -85,6 +85,19 @@ describe("processConfigurationMessage", () => {
     );
   });
 
+  it("uses multi-bot URL format when botId is provided", () => {
+    const template = "URL: {{WEBHOOK_URL}}, Base: {{WEBHOOK_BASE_URL}}";
+    const result = processConfigurationMessage(
+      template,
+      123,
+      "https://example.com",
+      "my-bot"
+    );
+    expect(result).toBe(
+      "URL: https://example.com/my-bot/123, Base: https://example.com/my-bot"
+    );
+  });
+
   it("handles template with no placeholders", () => {
     const template = "This is a message without placeholders";
     const result = processConfigurationMessage(

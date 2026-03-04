@@ -62,5 +62,27 @@ describe('Bot Repository', () => {
       expect(bot1).toBe(bot2);
       expect(mockEnv.BOT_CONFIG.get).toHaveBeenCalledTimes(1);
     });
+
+    it('should re-fetch from KV after cache TTL expires', async () => {
+      const mockBotConfig = {
+        token: 'test-bot-token',
+        createdAt: '2024-01-01T00:00:00.000Z',
+        updatedAt: '2024-01-01T00:00:00.000Z',
+      };
+
+      mockEnv.BOT_CONFIG.get.mockResolvedValue(mockBotConfig);
+
+      await getBotInstanceById('ttl-test-bot', mockEnv);
+      expect(mockEnv.BOT_CONFIG.get).toHaveBeenCalledTimes(1);
+
+      // Advance time past the 5-minute TTL
+      vi.useFakeTimers();
+      vi.advanceTimersByTime(6 * 60 * 1000);
+
+      await getBotInstanceById('ttl-test-bot', mockEnv);
+      expect(mockEnv.BOT_CONFIG.get).toHaveBeenCalledTimes(2);
+
+      vi.useRealTimers();
+    });
   });
 }); 
