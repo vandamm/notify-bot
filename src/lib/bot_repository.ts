@@ -34,8 +34,7 @@ export async function getBotInstanceById(botId: string, env: Env): Promise<Bot|u
     return undefined;
   }
 
-  const linkPreview = config.linkPreview !== false;
-  const parser = withLinkHandling(parserRegistry.get(config.parser || 'default'), linkPreview);
+  const parser = withLinkHandling(parserRegistry.get(config.parser || 'default'));
   const bot = new Bot(config.token, parser, config.configurationMessage);
   botInstances.set(botId, { bot, cachedAt: Date.now() });
 

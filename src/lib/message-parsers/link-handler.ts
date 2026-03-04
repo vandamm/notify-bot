@@ -16,17 +16,11 @@ function extractUrl(result: ParsedMessage): ParsedMessage {
   return { ...result, link: url, content: cleaned };
 }
 
-export function withLinkHandling(parser: MessageParser, linkPreview: boolean): MessageParser {
+export function withLinkHandling(parser: MessageParser): MessageParser {
   return {
     name: parser.name,
     parse(message: object): ParsedMessage {
-      const result = extractUrl(parser.parse(message));
-
-      if (!linkPreview && result.link) {
-        return { ...result, content: `${result.content}\n${result.link}`, link: undefined };
-      }
-
-      return result;
+      return extractUrl(parser.parse(message));
     },
   };
 }
