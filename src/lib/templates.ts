@@ -8,12 +8,13 @@ To receive notifications in this chat:
 
 ✅ You're all set! Notifications will be delivered to this chat.`;
 
-export function processConfigurationMessage(template: string, chatId: number, baseUrl: string): string {
+export function processConfigurationMessage(template: string, chatId: number, baseUrl: string, botId?: string): string {
   if (!baseUrl) throw new Error('Base URL is undefined');
   if (!template) throw new Error('Configuration message template is undefined');
 
-  const webhookUrl = `${baseUrl}/send-notifications/${chatId.toString()}`;
-  const webhookBaseUrl = `${baseUrl}/send-notifications`;
+  const basePath = botId ? `${baseUrl}/${botId}` : `${baseUrl}/send-notifications`;
+  const webhookUrl = `${basePath}/${chatId.toString()}`;
+  const webhookBaseUrl = basePath;
   const userId = chatId.toString();
   
   // Replace placeholders with values - no escaping needed for basic Markdown

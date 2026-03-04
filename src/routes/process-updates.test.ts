@@ -113,7 +113,8 @@ describe('handleProcessUpdates', () => {
 
     expect(mockBot.processUpdate).toHaveBeenCalledWith(
       mockUpdate,
-      'https://ping.vansach.me'
+      'https://ping.vansach.me',
+      '18xx.games'
     );
   });
 }); 

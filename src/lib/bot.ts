@@ -16,11 +16,11 @@ export class Bot {
     this.configurationMessage = configurationMessage;
   }
 
-  async processUpdate(update: Update, baseUrl: string) {
-    if (isStartMessage(update)) {
+  async processUpdate(update: Update, baseUrl: string, botId?: string) {
+    if (isStartMessage(update) && update.message) {
       const template = this.configurationMessage;
-      const message = processConfigurationMessage(template, update.message.chat.id, baseUrl);
-      
+      const message = processConfigurationMessage(template, update.message.chat.id, baseUrl, botId);
+
       await this.sendMessage(update.message.chat.id, message);
     } else {
       console.warn({
@@ -43,5 +43,5 @@ export class Bot {
 }
 
 function isStartMessage(update: Update): boolean {
-  return update.message?.text?.toLowerCase().trim().startsWith('/start');
+  return update.message?.text?.toLowerCase().trim().startsWith('/start') ?? false;
 }

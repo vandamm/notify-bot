@@ -76,5 +76,25 @@ describe('Bot', () => {
 
       expect(mockSendMessage).toHaveBeenCalledWith(456, 'Custom setup instructions: https://example.com/send-notifications/456');
     });
+
+    it('should use multi-bot URL format when botId is provided', async () => {
+      const customMessage = 'URL: {{WEBHOOK_URL}}';
+      const bot = new Bot('test-token', parser, customMessage);
+      bot.sendMessage = mockSendMessage;
+
+      const startUpdate: Update = {
+        update_id: 1,
+        message: {
+          message_id: 1,
+          date: Date.now(),
+          chat: { id: 789, type: 'private' },
+          text: '/start'
+        }
+      };
+
+      await bot.processUpdate(startUpdate, 'https://example.com', 'my-bot');
+
+      expect(mockSendMessage).toHaveBeenCalledWith(789, 'URL: https://example.com/my-bot/789');
+    });
   });
 });
