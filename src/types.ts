@@ -6,7 +6,6 @@ export interface BotConfig {
   token: string;
   parser?: string;
   configurationMessage?: string;
-  linkPreview?: boolean;
   createdAt: string;
   updatedAt: string;
 }
