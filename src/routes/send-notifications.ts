@@ -1,21 +1,5 @@
 import { getBotInstanceById } from '../lib/bot_repository';
 import { Env } from '../types';
-import { ParsedMessage } from '../lib/message-parsers/types';
-
-const LEADING_URL_PATTERN = /^(https?:\/\/\S+)(?:\s+-\s+|\s+)([\s\S]*)$/;
-
-function extractLeadingUrl(parsedMessage: ParsedMessage): ParsedMessage {
-  if (parsedMessage.link) return parsedMessage;
-
-  const match = parsedMessage.content.match(LEADING_URL_PATTERN);
-  if (!match) return parsedMessage;
-
-  return {
-    ...parsedMessage,
-    link: match[1],
-    content: match[2].trim(),
-  };
-}
 
 function resolveChatId(routeChatId?: number, parsedMessage?: ParsedMessage): number|undefined {
   if (routeChatId && !isNaN(routeChatId)) {
@@ -68,7 +52,7 @@ export async function handleSendNotifications(request: Request, env: Env, botId:
     }
 
     const body = await parseRequestBody(request);
-    const parsedMessage = extractLeadingUrl(bot.parseMessage(body as object));
+    const parsedMessage = bot.parseMessage(body as object);
 
     console.log({
       message: 'Notification',
