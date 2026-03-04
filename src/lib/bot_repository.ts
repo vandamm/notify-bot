@@ -1,6 +1,7 @@
 import { Bot } from './bot';
 import { Env, BotConfig } from '../types';
 import { parserRegistry } from './message-parsers/registry';
+import { withLinkHandling } from './message-parsers/link-handler';
 
 const botInstances = new Map<string, Bot>();
 
@@ -26,9 +27,9 @@ export async function getBotInstanceById(botId: string, env: Env): Promise<Bot|u
     return undefined;
   }
 
-  const parser = parserRegistry.get(config.parser || 'default');
   const linkPreview = config.linkPreview !== false;
-  const bot = new Bot(config.token, parser, config.configurationMessage, linkPreview);
+  const parser = withLinkHandling(parserRegistry.get(config.parser || 'default'), linkPreview);
+  const bot = new Bot(config.token, parser, config.configurationMessage);
   botInstances.set(botId, bot);
 
   return bot;
