@@ -1,4 +1,5 @@
 import { getBotInstanceById } from '../lib/bot_repository';
+import { ParsedMessage } from '../lib/message-parsers/types';
 import { Env } from '../types';
 
 function resolveChatId(routeChatId?: number, parsedMessage?: ParsedMessage): number|undefined {
