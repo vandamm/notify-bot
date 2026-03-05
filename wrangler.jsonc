@@ -20,7 +20,8 @@
   "kv_namespaces": [
     {
       "binding": "BOT_CONFIG",
-      "id": "32db53c51de94dbfa178eed5ac81b74e"
+      "id": "32db53c51de94dbfa178eed5ac81b74e",
+      "preview_id": "32db53c51de94dbfa178eed5ac81b74e"
     }
   ]
 } 
