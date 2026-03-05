@@ -5,6 +5,11 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
+      deployments: write
     steps:
       - uses: actions/checkout@v4
       - name: Setup Node.js
@@ -21,4 +26,19 @@ jobs:
           name: Vitest Tests # Name of the check run which will be created
           path: reports/junit.xml # Path to test results
           reporter: java-junit # Format of test results
-
+      - name: Deploy Preview
+        if: success()
+        id: deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: versions upload
+      - name: Comment Preview URL
+        if: success() && steps.deploy.outputs.deployment-url
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: preview-url
+          message: |
+            ### Preview Deployment
+            Deployed to: ${{ steps.deploy.outputs.deployment-url }}
